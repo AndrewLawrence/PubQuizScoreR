@@ -85,21 +85,28 @@ the_path_to_rawscore_victory <- cumulate_scores(rawscores)
 the_path_to_propscore_victory <- cumulate_scores(propscores)
 the_path_to_rankscore_victory <- cumulate_scores(rankscores)
 
-# Plots
-plot_scores(totalize(rawscores),
+
+# Make Plots --------------------------------------------------------------
+
+plot_scores(add_quizmean(rawscores),
             ranked_y = FALSE) +
   ggtitle("Raw Scores per Round")
-plot_scores(totalize(propscores),
+
+plot_scores(add_quizmean(propscores),
             ranked_y = FALSE) +
   ggtitle("Proportion Scores per Round")
-plot_scores(totalize(rankscores)) +
+
+plot_scores(add_quizmean(rankscores)) +
   ggtitle("Rank Scores per Round")
+
 
 plot_scores(the_path_to_rawscore_victory,
             ranked_y = FALSE) +
   ggtitle("Progression Of Average Raw Score")
+
 plot_scores(the_path_to_propscore_victory,
             ranked_y = FALSE) +
   ggtitle("Progression Of Average Proportion Score")
+
 plot_scores(the_path_to_rankscore_victory) +
   ggtitle("Progression Of Average Rank Score")

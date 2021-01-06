@@ -1,10 +1,9 @@
 # Functions to use in the project:#
 
-
-# A 'quiz' is a data.frame of
+# A 'quiz' is a data.frame with custom attributes
 #   it contains per-round scores (columns) for each participant (rows)
 #   additionally it has a config attribute telling whether larger is
-#   better (for the round). This is set from the first row of the input.
+#   better (for the round).
 #
 # The input should be a CSV (with headers) using NA for any missed rounds,
 #   the first column should be called 'player' and contain participant names.
@@ -22,7 +21,7 @@ read_quiz <- function(f, ScoreDirection = -1, RoundTotals = NA) {
   # preserve orignal names:
   rlab <- colnames(df)
   # make syntactically valid names:
-  colnames(df) <- paste0("round", seq_len(df))
+  colnames(df) <- paste0("round", seq_along(df))
 
   # add attributes:
   attr(df, "config") <- rep(ScoreDirection, length = NCOL(df))
@@ -52,7 +51,7 @@ rankscore_quiz <- function(q) {
   return(scores)
 }
 
-totalize <- function(x) {
+add_quizmean <- function(x) {
   x$FinalAverageRank <- apply(x, 1, mean, na.rm = T)
   attr(x, "roundlabels") <- c(attr(x, "roundlabels"), "Final Average")
   return(x)
@@ -65,11 +64,11 @@ cummean_noNA <- function(x) {
   #
   # So if x = 1, NA, 3 we want cumsum to give 1, 1, 4
   # And seq.along to give 1, 1, 2
-  vals <- x <- as.numeric(x)
-  vals[is.na(vals)] <- 0
-  divs <- cumsum(as.numeric(!is.na(x))) # increments 0 if NA and 1 otherwise.
-  divs[divs == 0] <- NA
-  return(cumsum(vals) / divs)
+  num <- x <- as.numeric(x)
+  num[is.na(num)] <- 0
+  denom <- cumsum(as.numeric(!is.na(x))) # increments 0 if NA and 1 otherwise.
+  denom[denom == 0] <- NA
+  return(cumsum(num) / denom)
 }
 
 cumulate_scores <- function(x) {
@@ -77,7 +76,6 @@ cumulate_scores <- function(x) {
   attributes(res) <- attributes(x)
   return(res)
 }
-
 
 tidy_quizobject <- function(x) {
   res <- x
