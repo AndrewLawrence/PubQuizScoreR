@@ -11,26 +11,35 @@
 #   remaining columns contain the results of quiz rounds and the column
 #   header will be used to label the round.
 
-read_quiz <- function(f, config = -1) {
+read_quiz <- function(f, ScoreDirection = -1, RoundTotals = NA) {
   # f is a path to a file
   # config is a vector which is castable to the number of rounds
   #   the sign of each element of config determines whether smaller scores
   #   are better (1), or larger scores are better (-1)
   df <- read.csv(f, stringsAsFactors = FALSE, check.names = FALSE)
-  #cfg <- df[1,]
-  plab <- df[,1]
-  df <- df[,-1]
+  plab <- df[, 1]
+  df <- df[, -1]
   # preserve orignal names:
   rlab <- colnames(df)
   # make syntactically valid names:
-  colnames(df) <- paste0("round", 1:ncol(df))
-  # fixrownames:
-  rownames <- 1:NROW(df)
+  colnames(df) <- paste0("round", seq_len(df))
 
-  attr(df, "config") <- rep(config, length = NCOL(df))
+  # add attributes:
+  attr(df, "config") <- rep(ScoreDirection, length = NCOL(df))
+  attr(df, "roundtotals") <- rep(RoundTotals, length = NCOL(df))
   attr(df, "pptlabels") <- plab
   attr(df, "roundlabels") <- rlab
   return(df)
+}
+
+propscore_quiz <- function(q) {
+  has_roundtotals <- any(is.na(attr(q, "roundtotals")))
+  if (has_roundtotals) {
+    stop("Check provided roundtotals: see read_quiz()")
+  }
+  res <- sweep(q, 2, attr(q, "roundtotals"), "/")
+  attributes(res) <- attributes(q)
+  return(res)
 }
 
 rankscore_quiz <- function(q) {
@@ -45,7 +54,7 @@ rankscore_quiz <- function(q) {
 
 totalize <- function(x) {
   x$FinalAverageRank <- apply(x, 1, mean, na.rm = T)
-  attr(x, "roundlabels") <- c(attr(x, "roundlabels"), "Final Average Rank")
+  attr(x, "roundlabels") <- c(attr(x, "roundlabels"), "Final Average")
   return(x)
 }
 
@@ -53,8 +62,9 @@ cummean_noNA <- function(x) {
   # without NAs we would run cumsum(x) / seq.along(x)
   # however NAs must be specially coded to not increment cumsum(x), or #
   #   or seq.along(x)
-  # cumsum(c(1,NA,3)) = c(1, 1, 4)
-  # seq.along(c(1,NA,3)) = c(1, 1, 2)
+  #
+  # So if x = 1, NA, 3 we want cumsum to give 1, 1, 4
+  # And seq.along to give 1, 1, 2
   vals <- x <- as.numeric(x)
   vals[is.na(vals)] <- 0
   divs <- cumsum(as.numeric(!is.na(x))) # increments 0 if NA and 1 otherwise.
@@ -62,7 +72,7 @@ cummean_noNA <- function(x) {
   return(cumsum(vals) / divs)
 }
 
-cumulate_rankscores <- function(x) {
+cumulate_scores <- function(x) {
   res <- data.frame(t(apply(x, 1, cummean_noNA)))
   attributes(res) <- attributes(x)
   return(res)
@@ -85,9 +95,10 @@ plot_scores <- function(x, ranked_y = TRUE) {
   p <- tidy_quizobject(x)
 
   ylab <- "Rank"
-  if ( ! ranked_y ) ylab <- "Score"
+  if (!ranked_y) ylab <- "Score"
 
-  pp <- p %>% filter(!is.na(y)) %>%
+  pp <- p %>%
+    filter(!is.na(y)) %>%
     ggplot(aes(y = y, x = Round, colour = Player, group = Player)) +
     geom_line(aes()) +
     geom_point() +
@@ -97,7 +108,7 @@ plot_scores <- function(x, ranked_y = TRUE) {
     theme(panel.background = element_rect(fill = "grey90")) +
     theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 
-  if ( ranked_y ) {
+  if (ranked_y) {
     pp <- pp +
       scale_y_reverse(breaks = seq(nrow(x)))
   }

@@ -1,9 +1,9 @@
-"Players","r1:carrots","r2:parsnips","r3:kale","r4:turnips","r5:bananas"
-"Rudolph",4,28,10,27,9
-"Dasher",3,NA,11,20,10
-"Prancer",2,25,NA,29,14
-"Vixen",NA,30,13,26,9
-"Comet",5,27,12,NA,13
-"Cupid",4,29,19,33,15
-"Donner",3,22,11,20,14
-"Blitzen",3,31,19,31,16
+"Players","r1:carrots","r2:parsnips","r3:kale","r4:turnips","r5:bananas","r6:Dragon Fruit"
+"Rudolph",4,67,8,59,14,NA
+"Dasher",3,NA,13,55,16,7
+"Prancer",2,68,NA,71,17,7
+"Vixen",NA,62,10,62,14,10
+"Comet",5,73,13,NA,14,6
+"Cupid",4,71,10,64,16,8
+"Donner",3,61,12,66,12,7
+"Blitzen",3,85,16,75,19,7
